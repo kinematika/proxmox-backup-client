@@ -1,0 +1,3 @@
+---
+pve_url_key: https://enterprise.proxmox.com/debian/proxmox-ve-release-6.x.gpg
+pve_dest_key: /etc/apt/trusted.gpg.d/proxmox-ve-release-6.x.gpg

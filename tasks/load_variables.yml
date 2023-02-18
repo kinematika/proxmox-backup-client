@@ -1,0 +1,3 @@
+---
+- name: Gather distribution specific variables
+  include_vars: "debian-{{ ansible_distribution_release }}.yml"

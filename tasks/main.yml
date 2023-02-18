@@ -1,0 +1,63 @@
+---
+- import_tasks: load_variables.yml
+
+- name: Install proxmox-backup-client
+  block:
+    - name: Ensure gpg is installed
+      apt:
+        name: gpg
+        state: present
+
+    - name: add apt key proxmox
+      get_url:
+        url: "{{ pve_url_key }}"
+        dest: "{{ pve_dest_key }}"
+
+    - name: Add repository proxmox backup client
+      apt_repository:
+        repo: '{{ pbc_client_repository_line }}'
+        filename: pbc.list
+        state: present
+      register: _pbc_repo
+
+    - name: Run apt-get dist-upgrade on repository changes
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        upgrade: dist
+      when: _pbc_repo is changed
+      retries: 2
+      register: _dist_upgrade
+      until: _dist_upgrade is succeeded
+
+    - name: Install proxmox-backup-client
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        name: proxmox-backup-client
+        state: present
+      retries: 2
+
+    - name: Remove script directory
+      file:
+        path: "{{ pbc_script_directory }}"
+        state: absent
+
+    - name: Create script directory
+      file:
+        path: "{{ pbc_script_directory }}"
+        state: directory
+
+    - name: j2 to script
+      template:
+        src: templates/pbclient.j2
+        dest: "{{ pbc_script_directory }}/pbclient.sh"
+
+    - name: Create a cron file for script
+      cron:
+        name: pbclient
+        user: root
+        minute: "0"
+        hour: "2"
+        job: "cd {{ pbc_script_directory }}; bash {{ pbc_script_directory }}/pbclient.sh"
+        cron_file: ansible_pbclient

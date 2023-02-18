@@ -1,0 +1,8 @@
+#!/bin/bash
+export PBS_PASSWORD="{{ lookup('bitwarden', 'proxmox-backup-client', field='password') }}"
+{% set distribution_release = ansible_facts['distribution_release'] %}
+{% if distribution_release == "buster" %}
+proxmox-backup-client backup root.pxar:{{ backup_path }} --repository pbclient@pbs@pbs0.ap-team.ru:PBS-Storage
+{% else %}
+proxmox-backup-client backup root.pxar:{{ backup_path }} --repository pbclient@pbs@pbs0.ap-team.ru:PBS-Storage --ns external
+{% endif %}
