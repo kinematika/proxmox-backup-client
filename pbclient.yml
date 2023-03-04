@@ -1,0 +1,14 @@
+- hosts: all
+  become: yes
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  vars_prompt:
+    - name: backup_path
+      prompt: Enter backup path (example /home/user)
+      private: no
+
+  roles:
+    - proxmox-backup-client
+    - ansible-modules-bitwarden
